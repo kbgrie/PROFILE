@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile Cá Nhân | Minh Hoàng</title>
+    <!-- Tải Tailwind CSS để xây dựng giao diện nhanh và chuẩn responsive -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Tải Font Inter từ Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Tải FontAwesome cho các icon mạng xã hội và trình phát nhạc -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            background-color: #090d16;
+            color: #f8fafc;
+        }
+
+        /* Hiệu ứng nền Gradient động (Animated Mesh Background) */
+        .bg-mesh {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            background: radial-gradient(circle at 15% 50%, rgba(99, 102, 241, 0.25), transparent 40%),
+                        radial-gradient(circle at 85% 30%, rgba(236, 72, 153, 0.25), transparent 40%),
+                        radial-gradient(circle at 50% 80%, rgba(14, 165, 233, 0.25), transparent 40%);
+            animation: pulseBg 12s ease-in-out infinite alternate;
+        }
+
+        @keyframes pulseBg {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.1); }
+        }
+
+        /* Hiệu ứng Glassmorphism (Kính mờ) */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.04);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Hiệu ứng xoay đĩa nhạc cho Avatar */
+        @keyframes spinSlow {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .avatar-spin {
+            animation: spinSlow 16s linear infinite;
+        }
+
+        .avatar-paused {
+            animation-play-state: paused;
+        }
+
+        /* Tùy chỉnh thanh trượt tiến trình nhạc (Range Input) */
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            background: transparent;
+            cursor: pointer;
+        }
+
+        input[type="range"]::-webkit-slider-runnable-track {
+            height: 5px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            margin-top: -4.5px;
+            background-color: #ffffff;
+            height: 14px;
+            width: 14px;
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+            transition: transform 0.15s ease;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.25);
+        }
+
+        /* Hiệu ứng sóng nhạc nhảy động */
+        .equalizer-bar {
+            width: 3px;
+            background-color: #818cf8;
+            border-radius: 99px;
+            animation: equalize 1s infinite ease-in-out;
+        }
+        .equalizer-bar:nth-child(2) { animation-delay: 0.2s; }
+        .equalizer-bar:nth-child(3) { animation-delay: 0.4s; }
+        .equalizer-bar:nth-child(4) { animation-delay: 0.1s; }
+
+        .equalizer-paused .equalizer-bar {
+            animation-play-state: paused;
+            height: 4px !important;
+        }
+
+        @keyframes equalize {
+            0%, 100% { height: 4px; }
+            50% { height: 14px; }
+        }
+
+        /* Ẩn thanh cuộn cho danh sách phát nhưng vẫn cuộn được */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4 sm:p-6 relative selection:bg-indigo-500 selection:text-white">
+
+    <!-- Nền động -->
+    <div class="bg-mesh"></div>
+
+    <!-- =====================================================================
+         1. MÀN HÌNH CHÀO (CLICK TO ENTER OVERLAY)
+         Giải pháp thông minh giúp vượt qua chính sách chặn Autoplay của Chrome/Safari
+         ===================================================================== -->
+    <div id="welcome-overlay" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#090d16]/90 backdrop-blur-xl transition-all duration-700 cursor-pointer select-none">
+        <div class="text-center px-6 transform transition-transform duration-500 hover:scale-105">
+            <div class="w-16 h-16 mx-auto mb-5 rounded-full bg-indigo-500/20 border border-indigo-400/30 flex items-center justify-center text-indigo-300 animate-pulse">
+                <i class="fa-solid fa-headphones text-2xl"></i>
+            </div>
+            <h2 class="text-2xl sm:text-3xl font-semibold tracking-wider text-white mb-2">
+                [ Nhấn để khám phá ]
+            </h2>
+            <p class="text-sm text-slate-400 font-light">
+                Các trang cá nhân của Minh Hoàng🎧
+            </p>
+        </div>
+    </div>
+
+    <!-- =====================================================================
+         2. NÚT BẬT / TẮT TIẾNG (MUTE / UNMUTE) NỔI Ở GÓC MÀN HÌNH
+         ===================================================================== -->
+    <button id="mute-toggle-btn" title="Bật / Tắt âm thanh" class="fixed top-5 right-5 z-40 w-11 h-11 rounded-full glass-card flex items-center justify-center text-slate-200 hover:text-white hover:bg-white/10 transition-all duration-300 shadow-lg">
+        <i id="mute-icon" class="fa-solid fa-volume-high text-base"></i>
+    </button>
+
+    <!-- Thông báo nhỏ (Toast) thay thế cho alert() -->
+    <div id="toast-notification" class="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-full glass-card text-xs font-medium text-white opacity-0 pointer-events-none transition-all duration-300 flex items-center gap-2">
+        <i class="fa-solid fa-check-circle text-emerald-400"></i>
+        <span id="toast-message">Đã sao chép!</span>
+    </div>
+
+    <!-- =====================================================================
+         3. THẺ PROFILE CHÍNH (GLASSMORPHISM CARD)
+         ===================================================================== -->
+    <main class="w-full max-w-md glass-card rounded-3xl p-6 sm:p-8 relative overflow-hidden transition-all duration-500">
+        
+        <!-- Huy hiệu Mắt xem (Đếm số lượt truy cập theo thời gian thực) -->
+        <div title="Tổng lượt truy cập trang" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs font-medium text-slate-300 backdrop-blur-md shadow-sm mb-3 sm:mb-0 sm:absolute sm:top-5 sm:right-5 transition-all duration-300 hover:bg-white/10 hover:text-white select-none">
+            <i class="fa-regular fa-eye text-indigo-400"></i>
+            <span id="view-counter-value" class="font-mono tracking-wide">...</span>
+        </div>
+
+        <!-- Phần Header: Avatar & Trạng thái -->
+        <div class="flex flex-col items-center text-center">
+            <!-- Vòng tròn Avatar xoay khi phát nhạc -->
+            <div class="relative mb-4 group">
+                <!-- Hiệu ứng phát sáng quanh Avatar -->
+                <div class="absolute -inset-1 rounded-full bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 opacity-75 blur-sm group-hover:opacity-100 transition duration-500"></div>
+                
+                <!-- Ảnh đại diện (Bạn có thể thay link ảnh của bạn ở thuộc tính src) -->
+                <img id="profile-avatar" 
+                     src="https://i.ibb.co/60M8bSN9/f8f81c5dce04756fe52688e758968543.jpg" 
+                     onerror="this.src='https://placehold.co/300x300/1e293b/ffffff?text=Avatar'"
+                     alt="Avatar" 
+                     class="relative w-28 h-28 sm:w-32 sm:h-32 rounded-full object-cover border-2 border-white/20 avatar-spin avatar-paused">
+                
+                <!-- Chấm trạng thái hoạt động (Online) -->
+                <span title="Đang trực tuyến" class="absolute bottom-1.5 right-1.5 w-5 h-5 rounded-full bg-emerald-500 border-4 border-[#131826] shadow-md"></span>
+            </div>
+
+            <!-- Tên & Huy hiệu -->
+            <div class="flex items-center justify-center gap-2 mb-1">
+                <h1 class="text-2xl font-bold tracking-tight text-white">Hoàng Minh</h1>
+                <i class="fa-solid fa-circle-check text-sky-400 text-sm" title="Đã xác minh"></i>
+            </div>
+
+            <!-- Trạng thái tùy chỉnh -->
+            <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs text-slate-300 mb-3">
+                <span class="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-ping"></span>
+                <span>Chill & Coding ☕</span>
+            </div>
+
+            <!-- Bio ngắn gọn -->
+            <p class="text-sm text-slate-300/90 leading-relaxed max-w-xs mb-6 font-light">
+                Xin chào! Mình là một người yêu công nghệ, thích mày mò mọi thứ về code và đắm chìm trong những giai điệu Lofi nhẹ nhàng.
+            </p>
+        </div>
+
+        <!-- Phần Liên kết Mạng xã hội -->
+        <div class="grid grid-cols-5 gap-2.5 mb-7">
+            <!-- Facebook -->
+            <a href="https://www.facebook.com/share/19jeoUoXyw/" target="_blank" rel="noopener noreferrer" aria-label="Facebook"
+               class="h-11 rounded-2xl bg-white/5 hover:bg-blue-600/20 border border-white/10 hover:border-blue-500/40 flex items-center justify-center text-slate-300 hover:text-blue-400 transition-all duration-300 hover:-translate-y-1">
+                <i class="fa-brands fa-facebook-f text-lg"></i>
+            </a>
+            <!-- TikTok -->
+            <a href="https://www.tiktok.com/@hoangne05102008?_r=1&_t=ZS-9BebpiratLa" target="_blank" rel="noopener noreferrer" aria-label="TikTok"
+               class="h-11 rounded-2xl bg-white/5 hover:bg-pink-600/20 border border-white/10 hover:border-pink-500/40 flex items-center justify-center text-slate-300 hover:text-pink-400 transition-all duration-300 hover:-translate-y-1">
+                <i class="fa-brands fa-tiktok text-lg"></i>
+            </a>
+            <!-- Instagram -->
+            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" aria-label="Instagram"
+               class="h-11 rounded-2xl bg-white/5 hover:bg-purple-600/20 border border-white/10 hover:border-purple-500/40 flex items-center justify-center text-slate-300 hover:text-purple-400 transition-all duration-300 hover:-translate-y-1">
+                <i class="fa-brands fa-instagram text-lg"></i>
+            </a>
+            <!-- GitHub -->
+            <a href="https://github.com" target="_blank" rel="noopener noreferrer" aria-label="GitHub"
+               class="h-11 rounded-2xl bg-white/5 hover:bg-slate-600/30 border border-white/10 hover:border-slate-400/40 flex items-center justify-center text-slate-300 hover:text-white transition-all duration-300 hover:-translate-y-1">
+                <i class="fa-brands fa-github text-lg"></i>
+            </a>
+            <!-- Discord (Nhấn để copy username) -->
+            <button onclick="copyDiscord('rimuru2038')" aria-label="Discord" title="Nhấn để sao chép ID Discord"
+               class="h-11 rounded-2xl bg-white/5 hover:bg-indigo-600/20 border border-white/10 hover:border-indigo-500/40 flex items-center justify-center text-slate-300 hover:text-indigo-400 transition-all duration-300 hover:-translate-y-1">
+                <i class="fa-brands fa-discord text-lg"></i>
+            </button>
+        </div>
+
+        <!-- =====================================================================
+             4. TRÌNH PHÁT NHẠC TÍCH HỢP (MUSIC PLAYER)
+             ===================================================================== -->
+        <div class="rounded-2xl bg-black/30 border border-white/10 p-4 backdrop-blur-md">
+            
+            <!-- Thông tin bài hát đang phát -->
+            <div class="flex items-center justify-between gap-3 mb-3">
+                <div class="flex items-center gap-3 overflow-hidden">
+                    <!-- Ảnh bìa bài hát -->
+                    <div class="w-12 h-12 rounded-xl overflow-hidden flex-shrink-0 bg-slate-800 border border-white/10 relative">
+                        <img id="track-cover" src="https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=150&q=80" alt="Cover" class="w-full h-full object-cover">
+                    </div>
+                    
+                    <!-- Tên bài hát & Nghệ sĩ -->
+                    <div class="overflow-hidden">
+                        <h3 id="track-title" class="text-sm font-semibold text-white truncate">Đang tải bài hát...</h3>
+                        <p id="track-artist" class="text-xs text-slate-400 truncate">Nghệ sĩ</p>
+                    </div>
+                </div>
+
+                <!-- Hiệu ứng sóng nhạc + Nút mở danh sách phát -->
+                <div class="flex items-center gap-3 flex-shrink-0">
+                    <div id="equalizer" class="flex items-end gap-0.5 h-4 equalizer-paused">
+                        <div class="equalizer-bar"></div>
+                        <div class="equalizer-bar"></div>
+                        <div class="equalizer-bar"></div>
+                        <div class="equalizer-bar"></div>
+                    </div>
+                    <button id="playlist-toggle-btn" title="Danh sách bài hát" class="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center text-slate-300 hover:text-white transition">
+                        <i class="fa-solid fa-list-ul text-xs"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Thanh tiến trình thời gian (Progress Bar) -->
+            <div class="mb-2">
+                <input type="range" id="progress-bar" value="0" min="0" max="100" step="0.1" class="w-full">
+                <div class="flex justify-between text-[11px] text-slate-400 mt-1 font-mono">
+                    <span id="current-time">0:00</span>
+                    <span id="total-duration">0:00</span>
+                </div>
+            </div>
+
+            <!-- Các nút điều khiển: Lùi bài, Phát/Tạm dừng, Qua bài -->
+            <div class="flex items-center justify-center gap-6 mt-1">
+                <button id="prev-btn" aria-label="Bài trước" class="text-slate-400 hover:text-white transition p-2">
+                    <i class="fa-solid fa-backward-step text-base"></i>
+                </button>
+                
+                <button id="play-pause-btn" aria-label="Phát hoặc Tạm dừng" class="w-11 h-11 rounded-full bg-white text-slate-900 hover:scale-105 active:scale-95 transition flex items-center justify-center shadow-lg shadow-white/10">
+                    <i id="play-pause-icon" class="fa-solid fa-play text-base ml-0.5"></i>
+                </button>
+                
+                <button id="next-btn" aria-label="Bài tiếp theo" class="text-slate-400 hover:text-white transition p-2">
+                    <i class="fa-solid fa-forward-step text-base"></i>
+                </button>
+            </div>
+
+            <!-- Danh sách phát (Playlist Dropdown - Ẩn/Hiện khi bấm nút List) -->
+            <div id="playlist-container" class="hidden mt-4 pt-3 border-t border-white/10 max-h-40 overflow-y-auto no-scrollbar space-y-1.5">
+                <!-- Danh sách bài hát sẽ được JavaScript tự động tạo vào đây -->
+            </div>
+        </div>
+
+        <!-- Thẻ Audio ẩn để phát nhạc -->
+        <audio id="audio-player" preload="metadata"></audio>
+
+    </main>
+
+    <!-- =====================================================================
+         5. PHẦN JAVASCRIPT XỬ LÝ LOGIC & DANH SÁCH NHẠC
+         ===================================================================== -->
+    <script>
+        /**
+         * =====================================================================
+         * HƯỚNG DẪN CÁCH THAY NHẠC CỦA RIÊNG BẠN:
+         * 1. Chuẩn bị các file nhạc định dạng .mp3 của bạn.
+         * 2. Cách 1 (Khuyên dùng khi deploy Render): Tạo một thư mục tên là "music" 
+         *    cùng cấp với file index.html này, bỏ file nhạc vào (ví dụ: bai1.mp3),
+         *    sau đó điền src: "./music/bai1.mp3".
+         * 3. Cách 2: Upload file .mp3 lên GitHub, Cloudinary, Catbox.moe hoặc bất kỳ 
+         *    hosting nào cho phép lấy link trực tiếp đuôi .mp3, rồi dán link vào mục `src`.
+         * =====================================================================
+         */
+        const playlist = [
+            {
+                title: "Từ Bao Giờ · FuQuan",
+                artist: "FuQuan",
+                // Link nhạc mẫu miễn phí bản quyền hoạt động ổn định
+                src: "https://github.com/kbgrie/PROFILE/raw/refs/heads/main/music/T%E1%BB%AB%20Bao%20Gi%E1%BB%9D.mp3",
+                cover: "https://i.ibb.co/67QHksws/38ab4f836b9960f6c12df14c7b7a4941.jpg"
+            },
+            {
+                title: "mây",
+                artist: "Obito Official",
+                src: "https://github.com/kbgrie/PROFILE/raw/refs/heads/main/music/m%C3%A2y.mp3",
+                cover: "https://i.ibb.co/RpyRBdPf/e5fb5f87ce1cd5b212f224582865f1e6.jpg"
+            },
+            {
+                title: "Dangrangto",
+                artist: " Dangrangto, DONAL",
+                src: "https://github.com/kbgrie/PROFILE/raw/refs/heads/main/music/Dangrangto%20x%C6%B0%C6%A1ng%20r%E1%BB%93ng%20intro%20Prod.DONAL.mp3",
+                cover: "https://i.ibb.co/B5B4882c/38d2c00ace63879b656977e80b494466.jpg"
+            }
+        ];
+
+        // Khai báo các phần tử DOM
+        const welcomeOverlay = document.getElementById('welcome-overlay');
+        const audio = document.getElementById('audio-player');
+        const playPauseBtn = document.getElementById('play-pause-btn');
+        const playPauseIcon = document.getElementById('play-pause-icon');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const muteToggleBtn = document.getElementById('mute-toggle-btn');
+        const muteIcon = document.getElementById('mute-icon');
+        
+        const trackTitle = document.getElementById('track-title');
+        const trackArtist = document.getElementById('track-artist');
+        const trackCover = document.getElementById('track-cover');
+        const progressBar = document.getElementById('progress-bar');
+        const currentTimeEl = document.getElementById('current-time');
+        const totalDurationEl = document.getElementById('total-duration');
+        
+        const profileAvatar = document.getElementById('profile-avatar');
+        const equalizer = document.getElementById('equalizer');
+        const playlistToggleBtn = document.getElementById('playlist-toggle-btn');
+        const playlistContainer = document.getElementById('playlist-container');
+
+        let currentTrackIndex = 0;
+        let isPlaying = false;
+
+        // Định dạng thời gian từ giây sang phút:giây (VD: 125 -> 2:05)
+        function formatTime(seconds) {
+            if (isNaN(seconds)) return "0:00";
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+        }
+
+        // Tải thông tin bài hát theo index
+        function loadTrack(index) {
+            const track = playlist[index];
+            trackTitle.textContent = track.title;
+            trackArtist.textContent = track.artist;
+            trackCover.src = track.cover;
+            audio.src = track.src;
+            renderPlaylist(); // Cập nhật trạng thái active trong danh sách
+        }
+
+        // Hàm Phát nhạc
+        function playAudio() {
+            audio.play().then(() => {
+                isPlaying = true;
+                updateUIState();
+            }).catch(error => {
+                console.warn("Trình duyệt tạm chặn tự động phát:", error);
+                isPlaying = false;
+                updateUIState();
+            });
+        }
+
+        // Hàm Tạm dừng nhạc
+        function pauseAudio() {
+            audio.pause();
+            isPlaying = false;
+            updateUIState();
+        }
+
+        // Cập nhật giao diện (Icon nút Play, hiệu ứng xoay Avatar, sóng nhạc)
+        function updateUIState() {
+            if (isPlaying) {
+                playPauseIcon.classList.remove('fa-play', 'ml-0.5');
+                playPauseIcon.classList.add('fa-pause');
+                profileAvatar.classList.remove('avatar-paused');
+                equalizer.classList.remove('equalizer-paused');
+            } else {
+                playPauseIcon.classList.remove('fa-pause');
+                playPauseIcon.classList.add('fa-play', 'ml-0.5');
+                profileAvatar.classList.add('avatar-paused');
+                equalizer.classList.add('equalizer-paused');
+            }
+        }
+
+        // Chuyển bài tiếp theo
+        function nextTrack() {
+            currentTrackIndex = (currentTrackIndex + 1) % playlist.length;
+            loadTrack(currentTrackIndex);
+            playAudio();
+        }
+
+        // Quay lại bài trước
+        function prevTrack() {
+            currentTrackIndex = (currentTrackIndex - 1 + playlist.length) % playlist.length;
+            loadTrack(currentTrackIndex);
+            playAudio();
+        }
+
+        // Tạo danh sách bài hát trong giao diện
+        function renderPlaylist() {
+            playlistContainer.innerHTML = '';
+            playlist.forEach((track, idx) => {
+                const isActive = idx === currentTrackIndex;
+                const item = document.createElement('div');
+                item.className = `flex items-center justify-between p-2 rounded-xl cursor-pointer text-xs transition ${
+                    isActive ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30' : 'hover:bg-white/5 text-slate-300'
+                }`;
+                item.innerHTML = `
+                    <div class="flex items-center gap-2.5 truncate">
+                        <span class="font-mono text-[10px] opacity-60">${idx + 1}</span>
+                        <span class="truncate font-medium">${track.title}</span>
+                    </div>
+                    ${isActive ? '<i class="fa-solid fa-volume-high text-[10px] text-indigo-400"></i>' : ''}
+                `;
+                item.addEventListener('click', () => {
+                    currentTrackIndex = idx;
+                    loadTrack(currentTrackIndex);
+                    playAudio();
+                });
+                playlistContainer.appendChild(item);
+            });
+        }
+
+        // =====================================================================
+        // XỬ LÝ SỰ KIỆN TƯƠNG TÁC
+        // =====================================================================
+
+        // 1. Khi người dùng nhấn vào Màn hình chào (Click to Enter)
+        welcomeOverlay.addEventListener('click', () => {
+            // Làm mờ và ẩn màn hình chào
+            welcomeOverlay.classList.add('opacity-0', 'pointer-events-none');
+            setTimeout(() => {
+                welcomeOverlay.style.display = 'none';
+            }, 700);
+
+            // Kích hoạt phát nhạc ngay lập tức vì người dùng đã tương tác!
+            audio.volume = 0.7; // Âm lượng mặc định 70% cho dễ chịu
+            playAudio();
+        });
+
+        // 2. Nút Play / Pause
+        playPauseBtn.addEventListener('click', () => {
+            if (isPlaying) {
+                pauseAudio();
+            } else {
+                playAudio();
+            }
+        });
+
+        // 3. Nút Next / Prev
+        nextBtn.addEventListener('click', nextTrack);
+        prevBtn.addEventListener('click', prevTrack);
+
+        // 4. Nút Bật / Tắt tiếng (Mute / Unmute) ở góc màn hình
+        muteToggleBtn.addEventListener('click', () => {
+            audio.muted = !audio.muted;
+            if (audio.muted) {
+                muteIcon.classList.remove('fa-volume-high');
+                muteIcon.classList.add('fa-volume-xmark', 'text-rose-400');
+            } else {
+                muteIcon.classList.remove('fa-volume-xmark', 'text-rose-400');
+                muteIcon.classList.add('fa-volume-high');
+            }
+        });
+
+        // 5. Ẩn / Hiện danh sách phát
+        playlistToggleBtn.addEventListener('click', () => {
+            playlistContainer.classList.toggle('hidden');
+        });
+
+        // 6. Cập nhật thanh tiến trình khi nhạc chạy
+        audio.addEventListener('timeupdate', () => {
+            if (audio.duration) {
+                const progressPercent = (audio.currentTime / audio.duration) * 100;
+                progressBar.value = progressPercent;
+                currentTimeEl.textContent = formatTime(audio.currentTime);
+                totalDurationEl.textContent = formatTime(audio.duration);
+            }
+        });
+
+        // 7. Tua nhạc khi kéo thanh tiến trình
+        progressBar.addEventListener('input', () => {
+            if (audio.duration) {
+                const seekTime = (progressBar.value / 100) * audio.duration;
+                audio.currentTime = seekTime;
+            }
+        });
+
+        // 8. Tự động chuyển bài khi hết nhạc
+        audio.addEventListener('ended', nextTrack);
+
+        // 9. Hàm sao chép ID Discord và hiện thông báo Toast mượt mà
+        function copyDiscord(username) {
+            const tempInput = document.createElement('input');
+            tempInput.value = username;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
+
+            const toast = document.getElementById('toast-notification');
+            const toastMsg = document.getElementById('toast-message');
+            toastMsg.textContent = `Đã sao chép Discord: ${username}`;
+            
+            toast.classList.remove('opacity-0', 'translate-y-2');
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+            }, 2500);
+        }
+
+        // =====================================================================
+        // 10. BỘ ĐẾM MẮT XEM (REAL-TIME VISITOR COUNTER + LOCALSTORAGE FALLBACK)
+        // =====================================================================
+        function animateCounter(element, targetValue, duration = 1200) {
+            const startValue = 0;
+            const startTime = performance.now();
+
+            function updateNumber(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                // Hiệu ứng làm mượt easeOutExpo
+                const easeProgress = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
+                const currentCount = Math.floor(startValue + (targetValue - startValue) * easeProgress);
+                
+                element.textContent = currentCount.toLocaleString('vi-VN');
+
+                if (progress < 1) {
+                    requestAnimationFrame(updateNumber);
+                } else {
+                    element.textContent = targetValue.toLocaleString('vi-VN');
+                }
+            }
+            requestAnimationFrame(updateNumber);
+        }
+
+        async function initVisitorCounter() {
+            const counterEl = document.getElementById('view-counter-value');
+            if (!counterEl) return;
+
+            // Tạo định danh duy nhất dựa trên domain khi deploy lên Render
+            const hostSlug = (window.location.hostname || 'local-profile').replace(/[^a-zA-Z0-9-]/g, '-');
+            const namespace = `profile-${hostSlug}`;
+            const key = 'visits';
+            const localStorageKey = `profile_views_${namespace}`;
+            const sessionKey = `profile_counted_${namespace}`;
+
+            // Kiểm tra xem phiên truy cập hiện tại đã được tính lượt xem chưa (tránh F5 liên tục)
+            const hasCountedInSession = sessionStorage.getItem(sessionKey);
+            let finalCount = null;
+
+            try {
+                // Sử dụng API công khai miễn phí counterapi.dev
+                const endpoint = hasCountedInSession
+                    ? `https://api.counterapi.dev/v1/${namespace}/${key}`
+                    : `https://api.counterapi.dev/v1/${namespace}/${key}/up`;
+
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 3500);
+
+                const response = await fetch(endpoint, { signal: controller.signal });
+                clearTimeout(timeoutId);
+
+                if (response.ok) {
+                    const data = await response.json();
+                    if (typeof data.count === 'number') {
+                        finalCount = data.count;
+                        localStorage.setItem(localStorageKey, finalCount.toString());
+                        sessionStorage.setItem(sessionKey, 'true');
+                    }
+                }
+            } catch (error) {
+                // Dự phòng mượt mà nếu mạng chậm, offline hoặc bị chặn bởi trình duyệt
+                console.warn("Chuyển sang chế độ đếm lượt xem dự phòng:", error);
+            }
+
+            // Fallback sang localStorage nếu API không phản hồi
+            if (finalCount === null) {
+                let storedCount = parseInt(localStorage.getItem(localStorageKey) || '128', 10);
+                if (!hasCountedInSession) {
+                    storedCount += 1;
+                    localStorage.setItem(localStorageKey, storedCount.toString());
+                    sessionStorage.setItem(sessionKey, 'true');
+                }
+                finalCount = storedCount;
+            }
+
+            // Chạy hiệu ứng tăng số mượt mà
+            animateCounter(counterEl, finalCount);
+        }
+
+        // Khởi tạo bài hát đầu tiên & bộ đếm lượt truy cập khi tải trang
+        loadTrack(currentTrackIndex);
+        initVisitorCounter();
+    </script>
+</body>
+</html>
